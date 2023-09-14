@@ -22,7 +22,7 @@ const app = express();
 // register a webhook handler with middleware
 // about the middleware, please refer to doc
 app.post('/webhook', line.middleware(config), async (req, res) => {
-
+ 
 
     Promise
         .all(req.body.events.map(handleEvent))
@@ -38,6 +38,7 @@ app.post('/webhook', line.middleware(config), async (req, res) => {
 // event handler
 let equipment = '';
 async function handleEvent(event) {
+    console.log(event)
 
     if (event.type !== 'message') {
 
@@ -62,12 +63,17 @@ async function handleEvent(event) {
             return client.replyMessage(event.replyToken, echo);
         }
     } else if (event.message.type === "location") {
+        let result = await getDisplayName(event);
+        console.log("result", result.data)
+        // let displayName = result.data.displayName;
+        // let pictureUrl = result.data.pictureUrl;
 
         let data = {
             equipment,
             latitude: event.message.latitude,
             longitude: event.message.longitude,
-            address: event.message.address
+            address: event.message.address,
+            displayName: result.data.displayName
         }
 
         if (equipment !== "") {
@@ -98,7 +104,19 @@ async function handleEvent(event) {
     }
 }
 
-// function read data
+//getdisplayname
+async function getDisplayName(event){
+    const userId =event.source.userId
+    return await axios.get(`https://api.line.me/v2/bot/profile/${userId}`,{
+        headers: {
+            Authorization: `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
+        }
+    })
+    //console.log(displayName) ;
+}
+
+
+
 app.get('/customerdata', async (req, res) => {
 
     const data = await getAllData();
@@ -115,19 +133,20 @@ async function getAllData() {
 // function post data
 
 function postData(data) {
+    console.log(data)
     let recorddata = {
 
         equipment: data.equipment,
         latitude: data.latitude,
         longitude: data.longitude,
-        address: data.address
-
+        address: data.address,
+        displayName: data.displayName
 
     }
 
 
     // Add one line to the sheet
-    const url = `${process.env.CONNECT_URL}?action=addLocation`
+    const url = `${process.env.CONNECT_URL}?action=addData`
     axios.post(url, recorddata).then(() => console.log("Success"))
 
 }
