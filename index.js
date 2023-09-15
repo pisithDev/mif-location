@@ -3,6 +3,7 @@
 const line = require('@line/bot-sdk');
 const express = require('express');
 const axios = require('axios')
+const cron = require('node-cron')
 //const {google} = require('googleapis')
 require('dotenv').config()
 
@@ -19,8 +20,11 @@ const client = new line.Client(config);
 // about Express itself: https://expressjs.com/
 const app = express();
 
+
+
 // register a webhook handler with middleware
 // about the middleware, please refer to doc
+cron.schedule("* * * * *", function(){
 app.post('/webhook', line.middleware(config), async (req, res) => {
  
 
@@ -33,7 +37,7 @@ app.post('/webhook', line.middleware(config), async (req, res) => {
         });
 });
 
-
+})
 
 // event handler
 let equipment = '';
@@ -116,12 +120,15 @@ async function getDisplayName(event){
 }
 
 
+    app.get('/customerdata',  async (req, res) => {
+        
+        const data = await getAllData();
+        console.log(data.data)
+        res.send(JSON.stringify(data.data))
+    })
 
-app.get('/customerdata', async (req, res) => {
 
-    const data = await getAllData();
-    res.send(JSON.stringify(data.data))
-})
+
 
 async function getAllData() {
     return await axios({
