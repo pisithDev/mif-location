@@ -3,7 +3,7 @@
 const line = require('@line/bot-sdk');
 const express = require('express');
 const axios = require('axios')
-const cron = require('node-cron')
+//const cron = require('node-cron')
 //const {google} = require('googleapis')
 require('dotenv').config()
 
@@ -24,7 +24,7 @@ const app = express();
 
 // register a webhook handler with middleware
 // about the middleware, please refer to doc
-cron.schedule("* * * * *", function(){
+
 app.post('/webhook', line.middleware(config), async (req, res) => {
  
 
@@ -37,7 +37,7 @@ app.post('/webhook', line.middleware(config), async (req, res) => {
         });
 });
 
-})
+
 
 // event handler
 let equipment = '';
@@ -117,22 +117,21 @@ async function getDisplayName(event){
         }
     })
     //console.log(displayName) ;
-}
-
-
-    app.get('/customerdata',  async (req, res) => {
+}  
         
-        const data = await getAllData();
-        console.log(data.data)
-        res.send(JSON.stringify(data.data))
-    })
+     app.get("/customerdata", async (req, res) => {
 
+            let data = await  getAllData();
+            console.log(data.data)
+            res.send(JSON.stringify(data.data))
+        })
 
+    
 
 
 async function getAllData() {
     return await axios({
-        url: `${process.env.CONNECT_URL}?action=getCustomerAddress`,
+        url: `${process.env.CONNECT_URL}?action=getDatas`,
         method: 'get'
     })
 }
